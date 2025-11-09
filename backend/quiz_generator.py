@@ -17,16 +17,17 @@ model = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
 quiz_prompt = """
     You are a professional quiz generator.
     Based on the given Wikipedia article text, generate a structured quiz in JSON format with:
-    - 10 multiple choice questions.
+    - Exactly 10 multiple choice questions.
     - Each question must have exactly 4 options (A, B, C, D).
-    - Include the correct answer key.
+    - The correct answer should be randomly placed among the options (not always same option like A).
+    - Include the correct answer key for each question.
     - Include a short summary of the article.
 
     Return only valid JSON in the following format:
 
     {{
     "title": "{title}",
-    "summary": "short summary here",
+    "summary": "one-line like 10 to 20 words short summary here",
     "questions": [
         {{
         "question": "string",

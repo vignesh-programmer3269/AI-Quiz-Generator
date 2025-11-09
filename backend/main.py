@@ -69,3 +69,23 @@ async def generate_quiz_endpoint(request: URLRequest, db: Session = Depends(get_
         "message": "Quiz generated and saved successfully",
         "quiz_id": quiz_entry.id
     }
+
+@app.get("/quiz/{quiz_id}")
+def get_quiz_by_id(quiz_id: str, db: Session = Depends(get_db)):
+    quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+
+    try:
+        quiz_data = json.loads(quiz.full_quiz_data)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Stored quiz data is corrupted")
+
+    return {
+        "id": quiz.id,
+        "url": quiz.url,
+        "title": quiz.title,
+        "date_generated": quiz.date_generated,
+        "summary": quiz_data.get("summary"),
+        "questions": quiz_data.get("questions"),
+    }
