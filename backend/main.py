@@ -89,3 +89,24 @@ def get_quiz_by_id(quiz_id: str, db: Session = Depends(get_db)):
         "summary": quiz_data.get("summary"),
         "questions": quiz_data.get("questions"),
     }
+
+@app.get("/quizzes-history")
+def get_all_quizzes(db: Session = Depends(get_db)):
+    quizzes = db.query(Quiz).order_by(Quiz.date_generated.desc()).all()
+
+    result = []
+    for quiz in quizzes:
+        try:
+            quiz_data = json.loads(quiz.full_quiz_data)
+        except json.JSONDecodeError:
+            quiz_data = {}
+
+        result.append({
+            "id": quiz.id,
+            "url": quiz.url,
+            "title": quiz.title,
+            "summary": quiz_data.get("summary", ""),
+            "date_generated": quiz.date_generated,
+        })
+
+    return result

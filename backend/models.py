@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text
 from sqlalchemy.sql import func
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Dict, List, Optional
 from database import Base
 import uuid
 
@@ -15,8 +15,9 @@ class Quiz(Base):
     date_generated = Column(DateTime(timezone=True), server_default=func.now())
 
 class QuestionItem(BaseModel):
+    question_no: int
     question: str
-    options: List[str]
+    options: Dict[str, str]
     answer: str
     explanation: Optional[str] = ""
 

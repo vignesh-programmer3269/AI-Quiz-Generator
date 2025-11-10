@@ -1,78 +1,67 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { generateQuiz } from "../../api/quizApi";
+import { useNavigate } from "react-router-dom";
 import "./index.css";
 
-const GenerateQuizPage = () => {
+const GenerateQuiz = () => {
   const [url, setUrl] = useState("");
-  const [quizLevel, setQuizLevel] = useState("Easy");
-  const [noOfQuiz, setNoOfQuiz] = useState("5");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const onChangeUrl = (event) => {
-    setUrl(event.target.value);
+  const handleGenerate = async () => {
+    if (!url.trim()) {
+      setError("Please enter a Wikipedia URL");
+      return;
+    }
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await generateQuiz(url);
+      navigate(`/quiz/${data.quiz_id}`);
+    } catch (err) {
+      setError("Failed to generate quiz. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onChangeQuizLevel = (event) => {
-    setQuizLevel(event.target.value);
-  };
-
-  const onChangesetNoOfQuiz = (event) => {
-    setNoOfQuiz(event.target.value);
-  };
-
-  const generateQuiz = (event) => {
-    event.preventDefault();
+  const handleViewHistory = () => {
+    navigate("/quizzes-history");
   };
 
   return (
     <div className="generate-quiz-page">
-      <form className="generate-quiz-form" onSubmit={generateQuiz}>
+      <div className="generate-container">
+        <h2>AI Quiz Generator</h2>
+
         <input
           type="text"
-          placeholder="Enter Wikipedia URL..."
           value={url}
-          onChange={onChangeUrl}
-          required
+          onChange={(e) => {
+            setUrl(e.target.value);
+            setError("");
+          }}
+          placeholder="Enter a Wikipedia URL"
+          className="url-input"
         />
-        <div>
-          <div>
-            <div className="quiz-level-con">
-              <label htmlFor="quizLevel">Quiz level: </label>
-              <select
-                id="quizLevel"
-                value={quizLevel}
-                onChange={onChangeQuizLevel}
-              >
-                <option value="Easy">Easy</option>
-                <option value="Medium">Medium</option>
-                <option value="Hard">Hard</option>
-              </select>
-            </div>
-            <div className="no-of-quiz-con">
-              <label htmlFor="noOfQuiz">No of Quiz: </label>
-              <select
-                id="noOfQuiz"
-                value={noOfQuiz}
-                onChange={onChangesetNoOfQuiz}
-              >
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-              </select>
-            </div>
-          </div>
-        </div>
+
         <button
-          type="button"
-          className="generate-quiz-btn"
-          onClick={generateQuiz}
+          onClick={handleGenerate}
+          disabled={loading}
+          className="generate-btn"
         >
-          Generate Quiz
+          {loading ? "Generating..." : "Generate Quiz"}
         </button>
-      </form>
+        <button onClick={handleViewHistory} className="history-btn">
+          View History
+        </button>
+
+        {error && <p className="error">{error}</p>}
+      </div>
     </div>
   );
 };
 
-export default GenerateQuizPage;
+export default GenerateQuiz;

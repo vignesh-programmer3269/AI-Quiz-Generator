@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 
@@ -18,20 +19,29 @@ quiz_prompt = """
     You are a professional quiz generator.
     Based on the given Wikipedia article text, generate a structured quiz in JSON format with:
     - Exactly 10 multiple choice questions.
-    - Each question must have exactly 4 options (A, B, C, D).
-    - The correct answer should be randomly placed among the options (not always same option like A).
-    - Include the correct answer key for each question.
-    - Include a short summary of the article.
+    - Each question must include:
+        - A unique question number starting from 1 to 10.
+        - A question text.
+        - Four options labeled strictly as "A", "B", "C", and "D" (uppercase only), even if the article or content uses lowercase or no labels.
+        - The correct answer key (e.g., "A", "B", "C", or "D") that matches one of the options.
+    - The correct answer must be placed randomly (not always the same option).
+    - Include a short one-line summary (10–20 words) of the article.
 
-    Return only valid JSON in the following format:
+    Return only valid JSON. Do not include explanations or markdown. The response must start with {{ and end with }}
 
     {{
     "title": "{title}",
     "summary": "one-line like 10 to 20 words short summary here",
     "questions": [
         {{
+        "question_no": "integer",
         "question": "string",
-        "options": ["A", "B", "C", "D"],
+        "options": {{
+            "A": "option A answer",
+            "B": "option B answer",
+            "C": "option C answer",
+            "D": "option D answer",
+        }},
         "answer": "A"
         }}
     ]
@@ -41,15 +51,21 @@ quiz_prompt = """
     Article content: {content}
 """
 
+def clean_json_string(text: str) -> str:
+    """Sanitize Gemini's malformed JSON output."""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.strip("`").replace("json", "", 1).strip()
+    text = re.sub(r'\\n\s*', '', text)
+    text = re.sub(r'\\"', '"', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text
+
 def generate_quiz(title, content):
     try:
         prompt = quiz_prompt.format(title=title, content=content)
         response = model.invoke(prompt)
-        ai_text = response.content.strip()
-
-        if ai_text.startswith("```"):
-            ai_text = ai_text.strip("`")  # remove all backticks
-            ai_text = ai_text.replace("json", "", 1).strip() 
+        ai_text = clean_json_string(response.content)
 
         return json.loads(ai_text)
     except json.JSONDecodeError:
