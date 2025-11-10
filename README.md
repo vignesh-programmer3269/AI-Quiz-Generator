@@ -80,10 +80,12 @@ npm start
 Your frontend will run on:
 
 http://localhost:3000
+```
 
 🧪 Testing the App
 
 ✅ Backend Testing
+```bash
 Run backend:
 
 uvicorn main:app --reload
@@ -96,8 +98,10 @@ http://127.0.0.1:8000/docs
 Try the /generate-quiz endpoint.
 
 Check PostgreSQL database to confirm quiz data is stored.
+```
 
 ✅ Frontend Testing
+```bash
 Start frontend:
 
 npm start
@@ -133,14 +137,18 @@ View History from home page
 Visit http://localhost:3000/quizzes-history page
 
 See all generated quizzes with titles and timestamps
+```
 
 🧩 API Endpoints Overview
+```bash
 Method  |     Endpoint       |          Description
 POST    |  /generate-quiz    |  Generate a new quiz from Wikipedia URL
 GET     |  /quiz/{quiz_id}   |  Fetch a specific quiz by ID
 GET     |  /quizzes Fetch    |  all previously generated quizzes
+```
 
 ⚠️ Common Issues
+```bash
 Issue     |              Cause                                               Solution
 Database  |  connection failed Invalid or missing    |  DATABASE_URL Check .env file credentials
 Missing   |  Google API Key GOOGLE_API_KEY not set   |  Add valid Gemini API key to .env
