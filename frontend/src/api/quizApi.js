@@ -7,11 +7,13 @@ export const generateQuiz = async (url) => {
     body: JSON.stringify({ url }),
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error("Failed to generate quiz");
+    throw new Error(data.detail || "Failed to generate quiz");
   }
 
-  return response.json();
+  return data;
 };
 
 export const fetchQuizById = async (quizId) => {

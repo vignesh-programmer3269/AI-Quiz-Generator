@@ -11,14 +11,17 @@ import json
 
 app = FastAPI()
 
+
 @app.on_event("startup")
 def on_startup():
     init_db()
+
 
 @app.get("/scrape")
 def scrape_wiki(wiki_url: str = Query(..., description="Wikipedia URL to scrape")):
     result = scrape_wikipedia_url(wiki_url)
     return result
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,8 +30,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class URLRequest(BaseModel):
     url: str
+
 
 def get_db():
     db = SessionLocal()
@@ -36,6 +41,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @app.post("/generate-quiz")
 async def generate_quiz_endpoint(request: URLRequest, db: Session = Depends(get_db)):
@@ -59,20 +65,23 @@ async def generate_quiz_endpoint(request: URLRequest, db: Session = Depends(get_
         title=title,
         scraped_content=content,
         full_quiz_data=json.dumps(quiz),
-        date_generated=datetime.now(timezone.utc)
+        date_generated=datetime.now(timezone.utc),
     )
     db.add(quiz_entry)
     db.commit()
     db.refresh(quiz_entry)
 
     return {
+        "quiz": quiz,
         "message": "Quiz generated and saved successfully",
-        "quiz_id": quiz_entry.id
+        "quiz_id": quiz_entry.id,
     }
+
 
 @app.get("/quiz/{quiz_id}")
 def get_quiz_by_id(quiz_id: str, db: Session = Depends(get_db)):
     quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
+
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
 
@@ -90,6 +99,7 @@ def get_quiz_by_id(quiz_id: str, db: Session = Depends(get_db)):
         "questions": quiz_data.get("questions"),
     }
 
+
 @app.get("/quizzes-history")
 def get_all_quizzes(db: Session = Depends(get_db)):
     quizzes = db.query(Quiz).order_by(Quiz.date_generated.desc()).all()
@@ -101,12 +111,14 @@ def get_all_quizzes(db: Session = Depends(get_db)):
         except json.JSONDecodeError:
             quiz_data = {}
 
-        result.append({
-            "id": quiz.id,
-            "url": quiz.url,
-            "title": quiz.title,
-            "summary": quiz_data.get("summary", ""),
-            "date_generated": quiz.date_generated,
-        })
+        result.append(
+            {
+                "id": quiz.id,
+                "url": quiz.url,
+                "title": quiz.title,
+                "summary": quiz_data.get("summary", ""),
+                "date_generated": quiz.date_generated,
+            }
+        )
 
     return result

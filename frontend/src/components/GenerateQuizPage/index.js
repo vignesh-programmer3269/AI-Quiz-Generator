@@ -21,7 +21,8 @@ const GenerateQuiz = () => {
       const data = await generateQuiz(url);
       navigate(`/quiz/${data.quiz_id}`);
     } catch (err) {
-      setError("Failed to generate quiz. Try again.");
+      setError(err.message || "Failed to generate quiz. Try again.");
+      console.log(err.message);
     } finally {
       setLoading(false);
     }

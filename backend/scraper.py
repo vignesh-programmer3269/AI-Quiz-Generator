@@ -1,18 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
 
+
 def scrape_wikipedia_url(url: str):
     if not url.startswith("http"):
         url = "https://" + url
 
     if not url.startswith("https://en.wikipedia.org/wiki/"):
         return {"error": "Please provide a valid Wikipedia URL."}
-    
+
     headers = {
         "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/119.0.0.0 Safari/537.36"
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/119.0.0.0 Safari/537.36"
         )
     }
 
@@ -38,5 +39,5 @@ def scrape_wikipedia_url(url: str):
         "title": title,
         "summary": summary_text.strip(),
         "content": full_text.strip(),
-        "url": url
+        "url": url,
     }
